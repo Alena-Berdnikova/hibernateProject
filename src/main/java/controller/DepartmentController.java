@@ -6,6 +6,9 @@ import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
 import org.hibernate.Transaction;
 
+import javax.persistence.TypedQuery;
+import java.util.List;
+
 
 public class DepartmentController {
     public static void main(String[] args) {
@@ -14,10 +17,17 @@ public class DepartmentController {
 
         try{
             //Perform CRUD operations
-            addDepartment(session);
+            //addDepartment(session);
             //findDepartment(session, 2);
             //updateDepartment(session, 3);
             //deleteDepartment(session, 4);
+            //findDepartmentHql(sessionFactory, session);
+            //findDepartmentHql2(sessionFactory, session);
+            //getRecordById(sessionFactory,session);
+            //getRecords(session);
+            //getMaxId(session);
+            //getCountIdGroupBy(session);
+            namedQueryExample(session);
         } finally {
             session.close();
             sessionFactory.close();
@@ -100,7 +110,73 @@ public class DepartmentController {
             e.printStackTrace();
         }
     }
+    public static void findDepartmentHql(SessionFactory factory,Session session) {
+        String hqlFrom = "FROM Department"; // Example of HQL to get all records of user class
+        String hqlSelect = "SELECT d FROM Department d";
+        TypedQuery<Department> query = session.createQuery(hqlFrom, Department.class);
+        List<Department> results = query.getResultList();
 
+        System.out.printf("%s%5s%15s%n","|Department Id","|Name","|State|");
+        for (Department d:results) {
+            System.out.printf(" %-13d %-13s %-30s %n", d.getId(), d.getName(), d.getState());
+        }
+    }
 
+    public static void findDepartmentHql2(SessionFactory factory,Session session) {
+        String hqlFrom = "FROM Department"; // Example of HQL to get all records of user class
+        String hqlSelect = "SELECT d FROM Department d";
+        TypedQuery<Department> query = session.createQuery(hqlSelect, Department.class);
+        List<Department> results = query.getResultList();
+
+        System.out.printf("%s%5s%15s%n","|Department Id","|Name","|State|");
+        for (Department d:results) {
+            System.out.printf(" %-13d %-13s %-30s %n", d.getId(), d.getName(), d.getState());
+        }
+    }
+
+    public static void getRecordById(SessionFactory factory, Session session) {
+        String hql = "FROM Department d WHERE d.id > 2 ORDER BY d.state DESC";
+        TypedQuery<Department> query = session.createQuery(hql, Department.class);
+        List<Department> results = query.getResultList();
+        System.out.printf("%s%5s%15s%n","|Department Id","|Name","|State|");
+        for (Department d : results) {
+            System.out.printf(" %-13d %-13s %-30s %n", d.getId(), d.getName(), d.getState());
+        }
+    }
+    public static void getRecords (Session session) {
+        TypedQuery<Object[]> query = session.createQuery(
+                "SELECT D.state, D.name FROM Department AS D", Object[].class);
+        List<Object[]> results = query.getResultList();
+        System.out.printf("%s%13s%n","State","Name");
+        for (Object[] a : results) {
+            System.out.printf("%-16s%s%n",a[0],a[1]);
+        }
+    }
+    public static void getMaxId(Session session) {
+        String hql = "SELECT max(D.id) FROM Department D";
+        TypedQuery<Object> query = session.createQuery(hql,Object.class);
+        Object result = query.getSingleResult();
+        System.out.printf("%s%s","Maximum Id:",result);
+    }
+    public static void getCountIdGroupBy(Session session)
+    {
+        String hql = "SELECT count (D.id), D.state FROM Department D GROUP BY D.state";
+        TypedQuery query = session.createQuery(hql);
+        List<Object[]> result =query.getResultList();
+        for (Object[] o : result) {
+            System.out.println("Id count " +o[0] +" | state: "+ o[1] );
+        }
+    }
+    public static void namedQueryExample(Session session) {
+        String hql = "FROM Department d WHERE d.id = :id";
+        TypedQuery<Department> query = session.createQuery(hql, Department.class);
+        query.setParameter("id", 2);
+        List<Department> result = query.getResultList();
+
+        System.out.printf("%s%5s%15s%n","|Department Id","|Name","|State|");
+        for (Department d : result) {
+            System.out.printf(" %-13d %-13s %-30s %n", d.getId(), d.getName(), d.getState());
+        }
+    }
 
 }
